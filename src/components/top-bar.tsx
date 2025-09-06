@@ -2,7 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, Bell, Settings } from "lucide-react";
+import { Bell, Settings } from "lucide-react";
+import { 
+  SignInButton, 
+  SignedIn, 
+  SignedOut, 
+  UserButton 
+} from "@clerk/nextjs";
 
 export function TopBar() {
   return (
@@ -21,10 +27,24 @@ export function TopBar() {
         <Button variant="ghost" size="icon" className="h-8 w-8">
           <Settings className="h-4 w-4" />
         </Button>
-        <Button variant="outline" className="flex items-center gap-2">
-          <User className="h-4 w-4" />
-          Sign in
-        </Button>
+        
+        <SignedOut>
+          <SignInButton>
+            <Button variant="outline">
+              Sign in
+            </Button>
+          </SignInButton>
+        </SignedOut>
+        
+        <SignedIn>
+          <UserButton 
+            appearance={{
+              elements: {
+                avatarBox: "h-8 w-8"
+              }
+            }}
+          />
+        </SignedIn>
       </div>
     </div>
   );

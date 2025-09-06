@@ -32,7 +32,7 @@ export function Sidebar({ className }: SidebarProps) {
 
   return (
     <div className={cn(
-      "flex flex-col h-screen bg-card border-r transition-all duration-300",
+      "flex flex-col h-full min-h-screen bg-card border-r transition-all duration-300",
       collapsed ? "w-16" : "w-64",
       className
     )}>
@@ -77,15 +77,6 @@ export function Sidebar({ className }: SidebarProps) {
           );
         })}
       </nav>
-
-      {/* Collapse note */}
-      {collapsed && (
-        <div className="p-2 text-xs text-muted-foreground text-center border-t">
-          <div className="rotate-90 whitespace-nowrap">
-            Hover to expand
-          </div>
-        </div>
-      )}
     </div>
   );
 }

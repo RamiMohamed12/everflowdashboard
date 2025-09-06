@@ -49,44 +49,28 @@ export function DataTable({ offerData, affiliateData, isLoading }: DataTableProp
   };
 
   const exportCSV = () => {
-    try {
-      // Check if we have data
-      if (!sortedData || sortedData.length === 0) {
-        alert('No data available to export');
-        return;
-      }
-
-      const headers = ["Type", "Name", "ID", "Profit", "Revenue", "Payout", "Conversions"];
-      const csvData = sortedData.map(item => [
-        groupBy === "offer" ? "Offer" : "Affiliate",
-        `"${(item.name || '').replace(/"/g, '""')}"`, // Escape quotes properly
-        `"${item.id || ''}"`,
-        item.profit || 0,
-        item.revenue || 0,
-        item.payout || 0,
-        item.conversions || 0
-      ]);
-      
-      const csvContent = [
-        headers.join(","),
-        ...csvData.map(row => row.join(","))
-      ].join("\n");
-      
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${groupBy}-profits-${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(a); // Add to DOM
-      a.click();
-      document.body.removeChild(a); // Remove from DOM
-      URL.revokeObjectURL(url);
-      
-      console.log(`Exported ${sortedData.length} ${groupBy} records to CSV`);
-    } catch (error) {
-      console.error('Error exporting CSV:', error);
-      alert('Failed to export CSV. Please try again.');
-    }
+    const headers = ["Type", "Name", "ID", "Profit", "Revenue", "Payout", "Conversions"];
+    const csvData = sortedData.map(item => [
+      groupBy === "offer" ? "Offer" : "Affiliate",
+      item.name,
+      item.id,
+      item.profit,
+      item.revenue,
+      item.payout,
+      item.conversions
+    ]);
+    
+    const csvContent = [headers, ...csvData]
+      .map(row => row.map(cell => `"${cell}"`).join(","))
+      .join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${groupBy}-profits-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleSort = (column: "profit" | "conversions" | "revenue") => {
@@ -100,20 +84,20 @@ export function DataTable({ offerData, affiliateData, isLoading }: DataTableProp
 
   if (isLoading) {
     return (
-      <Card className="overflow-hidden">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Performance Data</CardTitle>
+      <Card>
+        <CardHeader>
+          <CardTitle>Performance Data</CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
-          <div className="space-y-3">
-            <div className="flex gap-3">
-              <Skeleton className="h-9 flex-1" />
-              <Skeleton className="h-9 w-32" />
-              <Skeleton className="h-9 w-32" />
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex gap-4">
+              <Skeleton className="h-10 flex-1" />
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 w-32" />
             </div>
             <div className="space-y-2">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
               ))}
             </div>
           </div>
@@ -123,44 +107,30 @@ export function DataTable({ offerData, affiliateData, isLoading }: DataTableProp
   }
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="pb-3">
+    <Card>
+      <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Performance Data</CardTitle>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => {
-              console.log('Current data:', { 
-                groupBy, 
-                offerData: offerData.length, 
-                affiliateData: affiliateData.length,
-                currentData: currentData.length,
-                sortedData: sortedData.length,
-                sampleItem: sortedData[0]
-              });
-            }}>
-              Debug
-            </Button>
-            <Button variant="outline" size="sm" onClick={exportCSV} disabled={sortedData.length === 0}>
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV ({sortedData.length})
-            </Button>
-          </div>
+          <CardTitle>Performance Data</CardTitle>
+          <Button variant="outline" size="sm" onClick={exportCSV}>
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent>
         {/* Filters and Controls */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by name or ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-9"
+              className="pl-10"
             />
           </div>
           <Select value={groupBy} onValueChange={(value: "offer" | "affiliate") => setGroupBy(value)}>
-            <SelectTrigger className="w-36 h-9">
+            <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -173,7 +143,7 @@ export function DataTable({ offerData, affiliateData, isLoading }: DataTableProp
             setSortBy(col as "profit" | "conversions" | "revenue");
             setSortOrder(order as "asc" | "desc");
           }}>
-            <SelectTrigger className="w-44 h-9">
+            <SelectTrigger className="w-48">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -188,11 +158,11 @@ export function DataTable({ offerData, affiliateData, isLoading }: DataTableProp
         </div>
 
         {/* Results Summary */}
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-xs text-muted-foreground">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-sm text-muted-foreground">
             Showing {sortedData.length} of {currentData.length} {groupBy === "offer" ? "offers" : "affiliates"}
           </p>
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline">
             {groupBy === "offer" ? "Grouped by Offer" : "Grouped by Affiliate"}
           </Badge>
         </div>
@@ -201,25 +171,25 @@ export function DataTable({ offerData, affiliateData, isLoading }: DataTableProp
         <div className="rounded-md border">
           <Table>
             <TableHeader>
-              <TableRow className="h-10">
-                <TableHead className="text-xs font-medium">Type</TableHead>
-                <TableHead className="text-xs font-medium">Name</TableHead>
-                <TableHead className="text-xs font-medium">ID</TableHead>
+              <TableRow>
+                <TableHead>Type</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>ID</TableHead>
                 <TableHead 
-                  className="cursor-pointer hover:bg-muted/50 text-xs font-medium"
+                  className="cursor-pointer hover:bg-muted/50"
                   onClick={() => handleSort("profit")}
                 >
                   Profit {sortBy === "profit" && (sortOrder === "desc" ? "↓" : "↑")}
                 </TableHead>
                 <TableHead 
-                  className="cursor-pointer hover:bg-muted/50 text-xs font-medium"
+                  className="cursor-pointer hover:bg-muted/50"
                   onClick={() => handleSort("revenue")}
                 >
                   Revenue {sortBy === "revenue" && (sortOrder === "desc" ? "↓" : "↑")}
                 </TableHead>
-                <TableHead className="text-xs font-medium">Payout</TableHead>
+                <TableHead>Payout</TableHead>
                 <TableHead 
-                  className="cursor-pointer hover:bg-muted/50 text-xs font-medium"
+                  className="cursor-pointer hover:bg-muted/50"
                   onClick={() => handleSort("conversions")}
                 >
                   Conversions {sortBy === "conversions" && (sortOrder === "desc" ? "↓" : "↑")}
@@ -229,27 +199,27 @@ export function DataTable({ offerData, affiliateData, isLoading }: DataTableProp
             <TableBody>
               {sortedData.length > 0 ? (
                 sortedData.map((item) => (
-                  <TableRow key={`${groupBy}-${item.id}`} className="h-10">
-                    <TableCell className="py-2">
-                      <Badge variant={groupBy === "offer" ? "default" : "secondary"} className="text-xs px-2 py-1">
+                  <TableRow key={`${groupBy}-${item.id}`}>
+                    <TableCell>
+                      <Badge variant={groupBy === "offer" ? "default" : "secondary"}>
                         {groupBy === "offer" ? "Offer" : "Affiliate"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-medium max-w-xs truncate text-sm py-2" title={item.name}>
+                    <TableCell className="font-medium max-w-xs truncate" title={item.name}>
                       {item.name}
                     </TableCell>
-                    <TableCell className="font-mono text-xs py-2">{item.id}</TableCell>
-                    <TableCell className={`font-medium text-sm py-2 ${item.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <TableCell className="font-mono text-sm">{item.id}</TableCell>
+                    <TableCell className={`font-medium ${item.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {formatCurrency(item.profit)}
                     </TableCell>
-                    <TableCell className="text-sm py-2">{formatCurrency(item.revenue)}</TableCell>
-                    <TableCell className="text-sm py-2">{formatCurrency(item.payout)}</TableCell>
-                    <TableCell className="text-sm py-2">{item.conversions.toLocaleString()}</TableCell>
+                    <TableCell>{formatCurrency(item.revenue)}</TableCell>
+                    <TableCell>{formatCurrency(item.payout)}</TableCell>
+                    <TableCell>{item.conversions.toLocaleString()}</TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-6 text-muted-foreground text-sm">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     {searchTerm ? "No results found for your search." : `No ${groupBy} data available.`}
                   </TableCell>
                 </TableRow>

@@ -16,6 +16,7 @@ interface HeaderControlsProps {
   dateRange: DateRange;
   onDateRangeChange: (range: DateRange) => void;
   onRefresh: () => void;
+  onExportCSV?: () => void;
   lastUpdated?: Date;
   isLoading?: boolean;
 }
@@ -32,6 +33,7 @@ export function HeaderControls({
   dateRange, 
   onDateRangeChange, 
   onRefresh, 
+  onExportCSV,
   lastUpdated,
   isLoading = false 
 }: HeaderControlsProps) {
@@ -124,7 +126,13 @@ export function HeaderControls({
           Refresh
         </Button>
 
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="flex items-center gap-2"
+          onClick={onExportCSV}
+          disabled={isLoading}
+        >
           <Download className="h-4 w-4" />
           Export CSV
         </Button>
