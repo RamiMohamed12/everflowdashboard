@@ -177,7 +177,7 @@ export async function GET(request: NextRequest) {
 
     console.log('Affiliate API: Fetching offers with filters:', { category, status, search, visibility, type })
 
-    const apiKey = process.env.EVERFLOW_API_KEY
+    const apiKey = process.env.EF_API_KEY
     
     if (!apiKey) {
       console.warn('No Everflow API key found, using mock data')
@@ -187,7 +187,8 @@ export async function GET(request: NextRequest) {
     try {
       // Choose the correct endpoint based on type
       const endpoint = type === 'runnable' ? 'offersrunnable' : 'alloffers'
-      const everflowUrl = `https://api.eflow.team/v1/affiliates/${endpoint}`
+      const baseUrl = process.env.EF_URL_AFFILIATE || 'https://api.eflow.team/v1/affiliates/'
+      const everflowUrl = `${baseUrl}${endpoint}`
       
       console.log('Calling Everflow Affiliate API:', everflowUrl)
       

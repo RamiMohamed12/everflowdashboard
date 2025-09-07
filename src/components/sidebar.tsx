@@ -8,7 +8,9 @@ import {
   Settings,
   Home,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Tag,
+  Percent
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,7 +24,7 @@ interface SidebarProps {
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: Home },
-  { name: 'Offers', href: '/affiliate-offers', icon: Gift },
+  { name: 'Offers', href: '/offers', icon: Gift },
   { name: 'Affiliates', href: '/affiliates', icon: Users },
   { name: 'Advertisers', href: '/advertisers', icon: Megaphone },
   { name: 'Reports', href: '/reports', icon: BarChart3 },

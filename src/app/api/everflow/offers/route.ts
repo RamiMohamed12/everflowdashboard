@@ -112,6 +112,12 @@ export async function POST(request: Request) {
       );
     }
 
+    // Debug: Check if environment variables are loaded
+    console.log('Environment check:', {
+      hasApiKey: !!process.env.EF_API_KEY,
+      apiUrl: process.env.EF_API_URL
+    });
+
     const body = await request.json();
     const { 
       page = 1,
@@ -120,20 +126,56 @@ export async function POST(request: Request) {
       filters = []
     } = body;
 
-    // Build the offers request payload
+    // Build the offers request payload for networks API
     const offersParams = {
       page,
       page_size,
-      search_terms: search ? [search] : [],
-      query: filters.length > 0 ? { filters } : undefined,
+      // Note: Networks API might use different parameter structure
+      search: search || "",
+      filters: filters.length > 0 ? filters : undefined,
     };
 
     try {
-      // Fetch offers from Everflow
+      // Fetch offers from Everflow using the networks API
+      // Use offerstable endpoint with proper query parameters and request body
+      const requestBody: any = {
+        filters: {
+          offer_status: "active" // Default to active offers
+        }
+      };
+
+      // Add search terms if search is provided
+      if (search && search.trim()) {
+        requestBody.search_terms = [{
+          search_type: "name",
+          value: search.trim()
+        }];
+      }
+
+      // Add additional filters if provided
+      if (filters && filters.length > 0) {
+        // Merge any additional filters from the request
+        Object.assign(requestBody.filters, ...filters);
+      }
+
+      // Build query parameters for paging
+      const queryParams = new URLSearchParams();
+      if (page && page > 1) {
+        queryParams.set('page', page.toString());
+      }
+      if (page_size && page_size !== 50) {
+        queryParams.set('page_size', page_size.toString());
+      }
+      
+      // Add relationships to get additional data
+      queryParams.set('relationship', 'visibility,ruleset,urls');
+
+      const endpoint = `offerstable${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+      
       const offersData = await everflowRequest(
-        'offerstable', 
-        'POST', 
-        offersParams
+        endpoint, 
+        'POST',
+        requestBody
       );
 
       // Extract offers array from response
@@ -142,17 +184,21 @@ export async function POST(request: Request) {
       // Normalize the offers data to ensure consistent structure
       const normalizedOffers = offers.map((offer: any) => ({
         ...offer,
-        // Ensure advertiser structure is consistent
+        // Ensure advertiser structure is consistent  
         advertiser: offer.advertiser || { 
           network_advertiser_id: offer.network_advertiser_id || 0,
-          name: offer.advertiser_name || 'Unknown' 
+          name: offer.network_advertiser_name || 'Unknown' 
         },
         // Ensure URLs are present
         preview_url: offer.preview_url || offer.destination_url || '',
-        offer_url: offer.offer_url || offer.tracking_url || '',
-        // Ensure numeric fields
-        default_payout: Number(offer.default_payout) || 0,
-        default_revenue: Number(offer.default_revenue) || 0,
+        offer_url: offer.offer_url || offer.tracking_url || offer.destination_url || '',
+        // Extract payout/revenue from the response format
+        default_payout: offer.payout_amount || offer.default_payout || 0,
+        default_revenue: offer.revenue_amount || offer.default_revenue || 0,
+        // Ensure category is available
+        category: offer.category || offer.relationship?.category?.name || 'General',
+        // Add description if available
+        description: offer.html_description || offer.description || '',
       }));
 
       // If no offers returned from API, use mock data for demo
@@ -202,15 +248,32 @@ export async function GET() {
       );
     }
 
+    // Debug: Check if environment variables are loaded
+    console.log('Environment check:', {
+      hasApiKey: !!process.env.EF_API_KEY,
+      apiUrl: process.env.EF_API_URL
+    });
+
     try {
-      // Fetch all offers with basic parameters
-      const offersData = await everflowRequest(
-        'offerstable', 
-        'POST', 
-        {
-          page: 1,
-          page_size: 100,
+      // Fetch offers from Everflow using the networks API  
+      // Use offerstable endpoint with basic active offer filter and relationships
+      const requestBody = {
+        filters: {
+          offer_status: "active" // Get active offers by default
         }
+      };
+
+      // Add relationships to get additional data
+      const queryParams = new URLSearchParams();
+      queryParams.set('relationship', 'visibility,ruleset,urls');
+      queryParams.set('page_size', '50'); // Default page size
+
+      const endpoint = `offerstable?${queryParams.toString()}`;
+
+      const offersData = await everflowRequest(
+        endpoint, 
+        'POST',
+        requestBody
       );
 
       // Extract offers array from response
@@ -222,14 +285,18 @@ export async function GET() {
         // Ensure advertiser structure is consistent
         advertiser: offer.advertiser || { 
           network_advertiser_id: offer.network_advertiser_id || 0,
-          name: offer.advertiser_name || 'Unknown' 
+          name: offer.network_advertiser_name || 'Unknown' 
         },
         // Ensure URLs are present
         preview_url: offer.preview_url || offer.destination_url || '',
-        offer_url: offer.offer_url || offer.tracking_url || '',
-        // Ensure numeric fields
-        default_payout: Number(offer.default_payout) || 0,
-        default_revenue: Number(offer.default_revenue) || 0,
+        offer_url: offer.offer_url || offer.tracking_url || offer.destination_url || '',
+        // Extract payout/revenue from the response format
+        default_payout: offer.payout_amount || offer.default_payout || 0,
+        default_revenue: offer.revenue_amount || offer.default_revenue || 0,
+        // Ensure category is available
+        category: offer.category || offer.relationship?.category?.name || 'General',
+        // Add description if available
+        description: offer.html_description || offer.description || '',
       }));
 
       // If no offers returned from API, use mock data for demo

@@ -1,5 +1,6 @@
 // Utility functions for Everflow API calls
 const EVERFLOW_API_URL = process.env.EF_API_URL || 'https://api.eflow.team/v1/networks/';
+const EVERFLOW_AFFILIATE_URL = process.env.EF_URL_AFFILIATE || 'https://api.eflow.team/v1/affiliates/';
 const EVERFLOW_API_KEY = process.env.EF_API_KEY;
 
 if (!EVERFLOW_API_KEY) {
@@ -43,6 +44,36 @@ export async function everflowRequest(
     return await response.json();
   } catch (error) {
     console.error('Everflow API request failed:', error);
+    throw error;
+  }
+}
+
+export async function everflowAffiliateRequest(
+  endpoint: string,
+  method: 'GET' | 'POST' = 'GET',
+  body?: any
+) {
+  const url = `${EVERFLOW_AFFILIATE_URL}${endpoint}`;
+  
+  const options: RequestInit = {
+    method,
+    headers: everflowHeaders,
+  };
+
+  if (body && method === 'POST') {
+    options.body = JSON.stringify(body);
+  }
+
+  try {
+    const response = await fetch(url, options);
+    
+    if (!response.ok) {
+      throw new Error(`Everflow Affiliate API error: ${response.status} ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Everflow Affiliate API request failed:', error);
     throw error;
   }
 }
