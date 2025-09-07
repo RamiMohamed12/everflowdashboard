@@ -13,22 +13,25 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface SidebarProps {
   className?: string;
 }
 
 const navigation = [
-  { name: 'Dashboard', href: '#', icon: Home, current: true },
-  { name: 'Offers', href: '#', icon: Gift, current: false },
-  { name: 'Affiliates', href: '#', icon: Users, current: false },
-  { name: 'Advertisers', href: '#', icon: Megaphone, current: false },
-  { name: 'Reports', href: '#', icon: BarChart3, current: false },
-  { name: 'Settings', href: '#', icon: Settings, current: false },
+  { name: 'Dashboard', href: '/', icon: Home },
+  { name: 'Offers', href: '/affiliate-offers', icon: Gift },
+  { name: 'Affiliates', href: '/affiliates', icon: Users },
+  { name: 'Advertisers', href: '/advertisers', icon: Megaphone },
+  { name: 'Reports', href: '/reports', icon: BarChart3 },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export function Sidebar({ className }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const pathname = usePathname();
 
   return (
     <div className={cn(
@@ -59,20 +62,21 @@ export function Sidebar({ className }: SidebarProps) {
       <nav className="flex-1 px-2 py-4 space-y-1">
         {navigation.map((item) => {
           const Icon = item.icon;
+          const isActive = pathname === item.href;
           return (
             <Button
               key={item.name}
-              variant={item.current ? "secondary" : "ghost"}
+              variant={isActive ? "secondary" : "ghost"}
               className={cn(
                 "w-full justify-start",
                 collapsed && "justify-center px-2"
               )}
               asChild
             >
-              <a href={item.href}>
+              <Link href={item.href}>
                 <Icon className="h-4 w-4" />
                 {!collapsed && <span className="ml-2">{item.name}</span>}
-              </a>
+              </Link>
             </Button>
           );
         })}
