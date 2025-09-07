@@ -26,9 +26,6 @@ import {
   Save,
   RefreshCw,
   Database,
-  Shield,
-  Globe,
-  Clock,
   BarChart3,
   Mail,
   Smartphone,
@@ -113,7 +110,6 @@ const defaultSettings: SettingsData = {
 export default function SettingsPage() {
   const { user } = useUser()
   const [settings, setSettings] = useState<SettingsData>(defaultSettings)
-  const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [showApiKey, setShowApiKey] = useState(false)
   const [apiKeyStatus, setApiKeyStatus] = useState<'checking' | 'valid' | 'invalid' | 'unknown'>('unknown')
@@ -181,7 +177,7 @@ export default function SettingsPage() {
       } else {
         setApiKeyStatus('invalid')
       }
-    } catch (error) {
+    } catch {
       setApiKeyStatus('invalid')
     }
   }
@@ -219,13 +215,13 @@ export default function SettingsPage() {
     }
   }
 
-  const updateSetting = (path: string, value: any) => {
+  const updateSetting = (path: string, value: unknown) => {
     const keys = path.split('.')
     const newSettings = { ...settings }
-    let current: any = newSettings
+    let current: Record<string, unknown> = newSettings as Record<string, unknown>
 
     for (let i = 0; i < keys.length - 1; i++) {
-      current = current[keys[i]]
+      current = current[keys[i]] as Record<string, unknown>
     }
     current[keys[keys.length - 1]] = value
 
