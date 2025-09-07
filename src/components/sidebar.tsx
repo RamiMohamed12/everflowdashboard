@@ -5,7 +5,6 @@ import {
   Users, 
   Gift, 
   Megaphone, 
-  Settings,
   Home,
   ChevronLeft,
   ChevronRight,
@@ -28,7 +27,6 @@ const navigation = [
   { name: 'Affiliates', href: '/affiliates', icon: Users },
   { name: 'Advertisers', href: '/advertisers', icon: Megaphone },
   { name: 'Reports', href: '/reports', icon: BarChart3 },
-  { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export function Sidebar({ className }: SidebarProps) {
